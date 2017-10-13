@@ -27,14 +27,12 @@ boundary_cond = [
     0, -F
     ];
 
-result = solve_for(K_global, boundary_cond);
+[result, K_reduced] = solve_for(K_global, boundary_cond);
+d = result(:, 1);
+f = result(:, 2);
 
 % add elements between nodes, returns K_global
 function K_global = add_element(K_global, node1, node2, k, direction)
-    
-    % noralize direction vector
-    %norm2 = direction' * direction;
-    %direction = direction / sqrt(norm2);
     
     % element stiffness matrix in local coord
     K_element_local = [k, -k; -k, k];
@@ -56,8 +54,8 @@ function K_global = add_element(K_global, node1, node2, k, direction)
     
 end
 
-% generate reduced stiffness matrix
-function result = solve_for(K_global, boundary_cond)
+% solve the problem
+function [result, K_reduced] = solve_for(K_global, boundary_cond)
     K_reduced = K_global(boundary_cond(1, :), boundary_cond(2, :), 1);
     f_reduced = boundary_cond(3, :)';
     d_reduced = K_reduced \ f_reduced;
@@ -66,3 +64,4 @@ function result = solve_for(K_global, boundary_cond)
     f = K_global * d;
     result = [d, f];
 end
+
