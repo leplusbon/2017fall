@@ -10,6 +10,7 @@ nodes = 4;
 % some constants
 k = 100;
 sqrt1_2 = sqrt(0.5);
+F = 1;
 
 % global stiffness matrix
 K_global = zeros(nodes * 2);
@@ -19,7 +20,14 @@ K_global = add_element(K_global, 1, 4, k, [sqrt1_2; -sqrt1_2]);     % AD
 K_global = add_element(K_global, 2, 4, k, [0, -1]);                 % BD
 K_global = add_element(K_global, 3, 4, k, [-sqrt1_2; -sqrt1_2]);    % CD
 
+% boundary conditions
+boundary_cond = [
+    7, 8;
+    7, 8;
+    0, -F
+    ];
 
+result = solve_for(K_global, boundary_cond);
 
 % add elements between nodes, returns K_global
 function K_global = add_element(K_global, node1, node2, k, direction)
@@ -49,6 +57,12 @@ function K_global = add_element(K_global, node1, node2, k, direction)
 end
 
 % generate reduced stiffness matrix
-function K_reduced = solve_for(boundary_cond)
-    boundary_cond(1)
+function result = solve_for(K_global, boundary_cond)
+    K_reduced = K_global(boundary_cond(1, :), boundary_cond(2, :), 1);
+    f_reduced = boundary_cond(3, :)';
+    d_reduced = K_reduced \ f_reduced;
+    d = zeros(size(K_global, 2), 1);
+    d(boundary_cond(1, :), 1, 1) = d_reduced;
+    f = K_global * d;
+    result = [d, f];
 end
