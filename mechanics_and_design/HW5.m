@@ -56,13 +56,9 @@ function problem1()
     disp("reduced stiffness matrix (N/m)");
     disp(K_reduced);
 
-    % displacement of node 1
-    disp("displacement of node 1 (m)");
-    disp(d(1:2));
-
-    % displacement of node 2
-    disp("displacement of node 2 (m)");
-    disp(d(3:4));
+    % displacement of node D
+    disp("displacement of node D (m)");
+    disp(d(7:8));
 
     % internal force in bar AD
     disp("internal force in bar AD (N)");
