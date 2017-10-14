@@ -8,19 +8,27 @@
 nodes = 4;
 
 % some constants
-k = 100;
+sqrt2 = sqrt(2);
 sqrt1_2 = sqrt(0.5);
-F = 1;
+
+% parameters / values
+E = 1000000000;     % Pa
+L = 1;              % m
+A = 0.0001;         % m2
+F = 1000;           % N
 
 % global stiffness matrix
 K_global = zeros(nodes * 2);
 
 % add elements
-K_global = add_element(K_global, 1, 4, k, [sqrt1_2; -sqrt1_2]);     % AD
-K_global = add_element(K_global, 2, 4, k, [0, -1]);                 % BD
-K_global = add_element(K_global, 3, 4, k, [-sqrt1_2; -sqrt1_2]);    % CD
+K_global = add_element(K_global, 1, 4, E * A / L, [sqrt1_2; -sqrt1_2]);
+K_global = add_element(K_global, 2, 4, E * A / L, [0; -1]);
+K_global = add_element(K_global, 3, 4, E * A / L, [-sqrt1_2; -sqrt1_2]);
 
 % boundary conditions
+% first row : index for d being not 0
+% second row : index for known F
+% third row : known F values
 boundary_cond = [
     7, 8;
     7, 8;
@@ -30,6 +38,36 @@ boundary_cond = [
 [result, K_reduced] = solve_for(K_global, boundary_cond);
 d = result(:, 1);
 f = result(:, 2);
+
+% display the results
+
+% global stiffness matrix
+disp("global stiffness matrix (N/m)");
+disp(K_global);
+
+% reduced stiffness matrix
+disp("reduced stiffness matrix (N/m)");
+disp(K_reduced);
+
+% displacement of node 1
+disp("displacement of node 1 (m)");
+disp(d(1:2));
+
+% displacement of node 2
+disp("displacement of node 2 (m)");
+disp(d(3:4));
+
+% internal force in bar AD
+disp("internal force in bar AD (N)");
+disp([sqrt1_2; -sqrt1_2]' * (d(7:8) - d(1:2)) * E * A / L);
+
+% internal force in bar BD
+disp("internal force in bar BD (N)");
+disp([0; -1]' * (d(7:8) - d(3:4)) * E * A / L);
+
+% internal force in bar CD
+disp("internal force in bar CD (N)");
+disp([-sqrt1_2; -sqrt1_2]' * (d(7:8) - d(5:6)) * E * A / L);
 
 % add elements between nodes, returns K_global
 function K_global = add_element(K_global, node1, node2, k, direction)
