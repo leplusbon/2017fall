@@ -67,14 +67,20 @@ end
 
 %% 하우스홀더 변환, 이중 QR 분해
 
-A0 = 100 * (rand(200, 200) - 0.5);
+%A0 = 100 * (rand(10, 10) - 0.5);
+%A0 = A0' + A0;
 %A0 = eye(10); 
 %A0 = [1, 1; 1, 0];
 %A0 = [3, 1, 2; -2, -5, -5; 4, 7, 1];
-%A0 = [5, -2, 1, 4; -2, 3, 0, 1; 1, 0, 2, -3; 4, 1, -3, 2];
+A0 = [5, -2, 1, 4; -2, 3, 0, 1; 1, 0, 2, -3; 4, 1, -3, 2];
 
 lambda = eigenval(A0);
-lambda
+modal = eigenvec(A0, lambda);
+
+disp(lambda);
+disp(modal);
+
+
 
 %% 프로베니우스 행렬
 
@@ -170,4 +176,15 @@ function lambda = eigenval(A0)
     lambda = [];
     A_householder = householder(A0);
     lambda = double_qr(A_householder, lambda);
+end
+
+%% eigenvectors
+
+function e_v = eigenvec(A0, lambda)
+    lambdasize = size(lambda, 1);
+    n = size(A0, 2);
+    e_v = [];
+    for i = 1:lambdasize
+        e_v = [e_v, null(rref(A0 - lambda(i, 1) * eye(n), 10^(-7)))];
+    end
 end
