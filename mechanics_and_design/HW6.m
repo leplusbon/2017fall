@@ -135,9 +135,18 @@ function problem2()
     disp("vertical deflection (m) when n = 100");
     disp(dy_100);
     
+    % plot n vs dy
+    %plot([2, 4, 10, 50, 100], [dy_2, dy_4, dy_10, dy_50, dy_100]);
+    %xlabel('n');
+    %ylabel('deflection in y direction (m)');
+    
     % plot the results
     plot(res_2(1, :), res_2(2, :), res_4(1, :), res_4(2, :), ...
         res_10(1, :), res_10(2, :), res_100(1, :), res_100(2, :));
+    title('x - y');
+    xlabel('x (m)');
+    ylabel('y (m)');
+    legend('n = 2', 'n = 4', 'n = 10', 'n = 100');
     
 end
 
