@@ -19,7 +19,7 @@ initial_mesh = [
 
 % given elements
 initial_elements = [
-    1, 2, 7, 8;
+    1, 2, 7, 6;
     2, 3, 8, 7;
     3, 4, 9, 8;
     4, 5, 10, 9;
@@ -28,6 +28,8 @@ initial_elements = [
     8, 9, 14, 13;
     9, 10, 15, 14
     ];
+
+[dx, dy] = solve(initial_mesh, initial_elements, boundary_cond(initial_mesh));
     
 % solve for the system
 function [dx, dy] = solve(mesh, elements, bcond)
@@ -46,7 +48,7 @@ function [dx, dy] = solve(mesh, elements, bcond)
         element = mesh(element_index, :);
         K_index = [2*element_index-1; 2*element_index];
         K_index = (K_index(:))';
-        
+        disp(K_index);
         K_g(K_index, K_index) = ...
             K_g(K_index, K_index) + get_k_element(element, E, v, t);
     end
@@ -64,17 +66,62 @@ function [dx, dy] = solve(mesh, elements, bcond)
 end
 
 function bcond = boundary_cond(mesh)
-
+    node_num = size(mesh, 1);
+    bcond = [1:(node_num*2); zeros(1, node_num*2)];
+    
+    P1 = 100000;
+    P2 = 200000;
+    for i = 1:node_num
+        if mesh(i, :) == [4, 2]
+            bcond(2, 2 * i) = -P1;
+        elseif mesh(i, :) == [8, 2]
+            bcond(2, 2 * i) = -P2;
+        elseif mesh(i, :) == [8, -2]
+            bcond(2, 2 * i) = P2;
+        elseif mesh(i, :) == [4, -2]
+            bcond(2, 2 * i) = P1;
+        end
+    end
+    for i = node_num:(-1):1
+        if mesh(i, 1) == 0
+            bcond(:, 2 * i) = [];
+            bcond(:, 2 * i - 1) = [];
+        end
+    end
+    
 end
 
-function [mesh, elements] = generate_mesh(boundary, mesh_size)
+function [mesh, elements] = generate_mesh(mesh_size)
+
     n = round(2 / mesh_size);
     x_coord = 0:1:(n*4);
-    y_coord = (-n*2):1:(n*2);
+    y_coord = (-n):1:(n);
     
-    x_coord = x_coord / n;
-    y_coord = y_coord / n;
+    x_coord = 2 * x_coord / n;
+    y_coord = 2 * y_coord / n;
     
+    node_num = (n * 4 + 1) * (n * 2 + 1);
+    mesh = zeros(node_num, 2);
+    
+    for i = 1:(n*4+1)
+        for j = 1:(n*2+1)
+            mesh((j - 1) * (n * 4 + 1) + i, :) = [
+                x_coord(i), y_coord(j)
+                ];
+        end
+    end
+    
+    elements = zeros(8 * n * n, 4);
+    for i = 1:(n*4)
+        for j = 1:(n*2)
+            elements((j - 1) * n * 4 + i, :) = [ ...
+                (j - 1) * n * 4 + i, ...
+                (j - 1) * n * 4 + i + 1, ...
+                j * n * 4 + i + 1, ...
+                j * n * 4 + i ...
+                ];
+        end
+    end
     
 end
 
@@ -147,7 +194,7 @@ function k_element = get_k_element(element, E, v, t)
         B = B / J;
         
         % perform guassian quadrature
-        k_element = k_element + B' * D * B * J * t * 1 * 1;
+        k_element = k_element + J * t * (B' * D * B);
         
     end
     
