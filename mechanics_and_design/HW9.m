@@ -159,7 +159,7 @@ function bcond = boundary_cond(mesh)
     bcond = [1:(node_num*2); zeros(1, node_num*2)];
     
     nl = (-6 + sqrt(8 * node_num + 1)) / 8;
-    P = -8 * 10000 * 0.5 / nl;
+    P = -8 * 10000 * 0.5 / (nl + 1);
     for i = 1:node_num
         if mesh(i, 2) == 2
             bcond(2, 2 * i) = P;
